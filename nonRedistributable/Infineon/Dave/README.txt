@@ -1,0 +1,1 @@
+Copy all directories (CMSIS...) from your Windows Dave installation here.
