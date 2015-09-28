@@ -29,6 +29,7 @@ from multiprocessing import Pool, cpu_count
 from workspace_tools.utils import run_cmd, mkdir, rel_path, ToolException, split_path
 from workspace_tools.settings import BUILD_OPTIONS, MBED_ORG_USER
 import workspace_tools.hooks as hooks
+from workspace_tools.hooks import hook_tool
 
 
 #Disables multiprocessing if set to higher number than the host machine CPUs
@@ -320,6 +321,7 @@ class mbedToolchain:
 
         return False
 
+    @hook_tool
     def scan_resources(self, path):
         labels = self.get_labels()
         resources = Resources(path)

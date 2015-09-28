@@ -11,7 +11,7 @@ _hooks = {}
 _running_hooks = {}
 
 # Available hook types
-_hook_types = ["binary", "compile", "link", "assemble"]
+_hook_types = ["scan_resources", "binary", "compile", "link", "assemble"]
 
 # Available hook steps
 _hook_steps = ["pre", "replace", "post"]
@@ -48,6 +48,7 @@ def hook_tool(function):
         res = function(t_self, *args, **kwargs)
         # Execute post-function after main function if specified
         if tooldesc.has_key("post"):
+            kwargs["_result_from_wrapped"] = res
             post_res = tooldesc["post"](t_self, *args, **kwargs)
             _running_hooks[tool] = False
             return post_res or res
@@ -71,6 +72,9 @@ class Hook:
             _hooks[hook_type] = {}
         _hooks[hook_type][hook_step] = function
         return True
+
+    def hook_add_scan_resources(self, hook_step, function):
+        return self._hook_add("scan_resources", hook_step, function)
 
     def hook_add_compiler(self, hook_step, function):
         return self._hook_add("compile", hook_step, function)

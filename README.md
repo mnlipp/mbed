@@ -1,3 +1,18 @@
+About this fork
+===============
+
+This fork attempts to add support for the XMC4500 microcontroller to mbed. 
+It will focus on the components that I need for my projects.
+
+As I don't feel comfortable with publishing files that are covered by the
+unclear ARM/Infineon license ("can be freely distributed within development 
+tools that are supporting such ARM based processors"), these files are not 
+included in the fork. Rather you have to copy the files from your Dave
+installation into the tree. The will then be rearranged and included in
+the "normal" mbed tree structure during build (see directory 
+"nonRedistributable").
+
+
 mbed SDK
 ========
 
