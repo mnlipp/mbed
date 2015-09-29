@@ -29,11 +29,14 @@ CORE_LABELS = {
 }
 
 import os
+from os import walk
+from os.path import join
 import binascii
 import struct
 import shutil
 from workspace_tools.patch import patch
 from paths import TOOLS_BOOTLOADERS
+from settings import ROOT
 
 class Target:
     def __init__(self):
@@ -1585,6 +1588,66 @@ class SAMD21J18A(Target):
         self.supported_toolchains = ["GCC_ARM"]
         self.default_toolchain = "GCC_ARM"
 
+# Infineon
+
+class XMC4500_RELAX_LITE(Target):
+    def __init__(self):
+        Target.__init__(self)
+        self.core = "Cortex-M4F"
+        self.extra_labels = ['XMC', 'XMC4', 'XMC45', 'XMC4500']
+        self.supported_toolchains = ["GCC_ARM"]
+        self.default_toolchain = "GCC_ARM"
+        self.macros = ["UC_ID=4503003"]
+
+    def init_hooks(self, hook, toolchain_name):
+        if toolchain_name in ['ARM_STD', 'ARM_MICRO', 'GCC_ARM', 'IAR']:
+            hook.hook_add_scan_resources("pre", self.pre_scan_resources_hook)
+            hook.hook_add_scan_resources("post", self.post_scan_resources_hook)
+
+    @staticmethod
+    def pre_scan_resources_hook(t_self, path, *args, **kwargs):
+        cmsis_tail = join("mbed", "targets", "cmsis")
+        if not path.endswith(cmsis_tail):
+            return
+        davePath = join(ROOT, "nonRedistributable", "Infineon", "Dave")
+        xmc4500_series = join(davePath, "CMSIS", "Infineon", "XMC4500_series")
+        xmc4500_include = join(xmc4500_series, "Include")
+        # Fix upper case problem (case is ignored in Windows)
+        try:
+            os.rename(join(xmc4500_include, "System_XMC4500.h"), join(xmc4500_include, "system_XMC4500.h"))
+        except:
+            pass
+        for root, dirs, files in walk(xmc4500_include):
+            for filename in files:
+                file_path = join(root, filename)
+                t_self.copy_files(file_path, join(path, "TARGET_XMC", "TARGET_XMC4500"), rel_path=root)
+                
+        # Copy files from non redistributable
+        to_dir = join(path, "TARGET_XMC", "TARGET_XMC4500", "TOOLCHAIN_" + t_self.name)
+        from_file = join(xmc4500_series, "Source", "GCC", "startup_XMC4500.s")
+        t_self.copy_files(from_file, to_dir, rel_path=os.path.dirname(from_file))
+        from_file = join(xmc4500_series, "Source", "GCC", "XMC4500.ld")
+        t_self.copy_files(from_file, to_dir, rel_path=os.path.dirname(from_file))
+
+        to_dir = join(path, "TARGET_XMC", "TARGET_XMC4500")
+        from_file = join(xmc4500_series, "Source", "System_XMC4500.c")
+        t_self.copy_files(from_file, to_dir, rel_path=os.path.dirname(from_file))
+        from_file = join(davePath, "CMSIS", "Infineon", "Include", "uc_id.inc")
+        t_self.copy_files(from_file, to_dir, rel_path=os.path.dirname(from_file))
+                
+        return
+
+    @staticmethod
+    def post_scan_resources_hook(t_self, path, *args, **kwargs):
+        resources = kwargs["_result_from_wrapped"];
+        for root, _, files in walk(path):
+            for filename in files:
+                if filename == "uc_id.inc":
+                    resources.headers.append(join(root, filename))
+                
+        return resources
+
+
 # Get a single instance for each target
 TARGETS = [
 
@@ -1740,6 +1803,9 @@ TARGETS = [
     ### Atmel ###
     SAMR21G18A(),
     SAMD21J18A(),
+    
+    ### Infineon ###
+    XMC4500_RELAX_LITE(),
 ]
 
 # Map each target name to its unique instance

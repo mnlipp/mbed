@@ -101,6 +101,7 @@ class GccArm(Exporter):
         'SAMR21G18A',
         'TEENSY3_1',
         'SAMD21J18A',
+        'XMC4500_RELAX_LITE',
     ]
 
     DOT_IN_RELATIVE_PATH = True
