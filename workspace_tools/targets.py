@@ -29,14 +29,11 @@ CORE_LABELS = {
 }
 
 import os
-from os import walk
-from os.path import join
 import binascii
 import struct
 import shutil
 from workspace_tools.patch import patch
 from paths import TOOLS_BOOTLOADERS
-from settings import ROOT
 
 class Target:
     def __init__(self):
@@ -1604,7 +1601,7 @@ class SAMR21G18A(Target):
         self.extra_labels = ['Atmel', 'SAM_CortexM0+', 'SAMR21']
         self.macros = ['__SAMR21G18A__', 'I2C_MASTER_CALLBACK_MODE=true', 'EXTINT_CALLBACK_MODE=true', 'USART_CALLBACK_MODE=true', 'TC_ASYNC=true']
         self.supported_toolchains = ["GCC_ARM"]
-        self.default_toolchain = "GCC_ARM"
+        self.default_toolchain = "ARM"
 
 class SAMD21J18A(Target):
     def __init__(self):
@@ -1613,11 +1610,21 @@ class SAMD21J18A(Target):
         self.extra_labels = ['Atmel', 'SAM_CortexM0+', 'SAMD21']
         self.macros = ['__SAMD21J18A__', 'I2C_MASTER_CALLBACK_MODE=true', 'EXTINT_CALLBACK_MODE=true', 'USART_CALLBACK_MODE=true', 'TC_ASYNC=true']
         self.supported_toolchains = ["GCC_ARM"]
-        self.default_toolchain = "GCC_ARM"
+        self.default_toolchain = "ARM"
+
+class SAMD21G18A(Target):
+    def __init__(self):
+        Target.__init__(self)
+        self.core = "Cortex-M0+"
+        self.extra_labels = ['Atmel', 'SAM_CortexM0+', 'SAMD21']
+        self.macros = ['__SAMD21G18A__', 'I2C_MASTER_CALLBACK_MODE=true', 'EXTINT_CALLBACK_MODE=true', 'USART_CALLBACK_MODE=true', 'TC_ASYNC=true']
+        self.supported_toolchains = ["GCC_ARM"]
+        self.default_toolchain = "ARM"
 
 # Infineon
 
 class XMC4500_RELAX_LITE(Target):
+    
     def __init__(self):
         Target.__init__(self)
         self.core = "Cortex-M4F"
@@ -1633,6 +1640,10 @@ class XMC4500_RELAX_LITE(Target):
 
     @staticmethod
     def pre_scan_resources_hook(t_self, path, *args, **kwargs):
+        from os import walk
+        from os.path import join
+        from settings import ROOT
+
         cmsis_tail = join("mbed", "targets", "cmsis")
         if not path.endswith(cmsis_tail):
             return
@@ -1666,6 +1677,9 @@ class XMC4500_RELAX_LITE(Target):
 
     @staticmethod
     def post_scan_resources_hook(t_self, path, *args, **kwargs):
+        from os import walk
+        from os.path import join
+
         resources = kwargs["_result_from_wrapped"];
         for root, _, files in walk(path):
             for filename in files:
@@ -1838,6 +1852,7 @@ TARGETS = [
     ### Atmel ###
     SAMR21G18A(),
     SAMD21J18A(),
+    SAMD21G18A(),
     
     ### Infineon ###
     XMC4500_RELAX_LITE(),
